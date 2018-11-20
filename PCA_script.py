@@ -1,17 +1,11 @@
 from PIL import Image
 import numpy as np
 import os
-import sys
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA 
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
-def show_img(img, title=None):
-    plt.imshow(np.reshape(img, (227, 227, 3)))
-    if title != None :
-        plt.title(title)
-    plt.show()
     
 def compute_pca(data, n_comp):
     #fit_transform() and inverse_transform() must work on the same PCA object
@@ -60,58 +54,98 @@ def manual_fit(data, from_pc, to_pc=None):
     return pca
 
 #to_print is the image to print as result
-def principal_component_analysis(dataset, to_print):
+def principal_component_analysis(dataset, to_print, outfile_name):
     to_print = to_print % len(dataset)
-    show_img(dataset[to_print], 'Original')
+    #parameters are chosen to centers the 8 images
+    fig = plt.figure(figsize=(20, 20))
+    rows = 4
+    columns = 4
+    i = 5
+    #original image
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(dataset[to_print], (227, 227, 3)))
+    plt.title('Original')
+    i += 1
     
     #standardization: it centers the data around 0 wit unit variance
     normalized, mean_v, std_v = standardize(dataset)
     
     #the pca are ordered based on the variance (from the highest to the lowest)
+    #first 60 PCs
     inverse = compute_pca(normalized, 60)
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], 'first 60 PCs:')
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('first 60 PCs')
+    i += 1
     
-    
+    #first 6 PCs
     inverse = compute_pca(normalized, 6)
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], 'first 6 PCs:')
-  
-
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('first 6 PCs')
+    i += 1
+    
+    #first 2 PCs
     inverse = compute_pca(normalized, 2)
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], 'first 2 PCs:')
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('first 2 PCs')
+    i += 1
     
-    
+    #last 6 PCs
     pca = manual_fit(normalized, -6)
     transformed = np.dot(normalized, pca.components_.T)
     inverse = np.dot(transformed, pca.components_) 
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], 'last 6 PCs')
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('last 6 PCs')
+    i += 1
     
-     
+    #first and second PCs
     pca = manual_fit(normalized, 1, 1)
     transformed = np.dot(normalized, pca.components_.T)
     inverse = np.dot(transformed, pca.components_) 
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], '1st and 2nd PCs')
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('1st and 2nd PCs')
+    i += 1
     
-    
+    #third and fourth PCs
     pca = manual_fit(normalized, 2, 3)
     transformed = np.dot(normalized, pca.components_.T)
     inverse = np.dot(transformed, pca.components_) 
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], '3rd and 4th PCs')
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('3rd and 4th PCs')
+    i += 1
     
-    
+    #tenth and eleventh PCs
     pca = manual_fit(normalized, 9, 10)
     transformed = np.dot(normalized, pca.components_.T)
     inverse = np.dot(transformed, pca.components_) 
     reconstructed = destandardize(inverse, mean_v, std_v)
-    show_img(reconstructed[to_print], '10th and 11th PCs')  
-   
+    fig.add_subplot(rows, columns, i)
+    plt.imshow(np.reshape(reconstructed[to_print], (227, 227, 3)))
+    plt.title('10th and 11th PCs')
     
-def visualize_scatter_plot(dataset) :
+    
+    plt.savefig(outfile_name)
+    #image = Image.open(outfile_name)
+    #image.show()
+    plt.show()
+    
+def visualize_scatter_plot(dataset, outfile_name) :
+    #parameters are chosen to centers the 3 plots
+    fig = plt.figure(figsize=(20, 20))
+    rows = 3
+    columns = 3
+    i = 4
     
     normalized_house, mean_v_house, std_v_house = standardize(dataset[0:280])
     normalized_dog, mean_v_dog, std_v_dog = standardize(dataset[280:469])
@@ -120,6 +154,8 @@ def visualize_scatter_plot(dataset) :
     
     
     #scatter plot with the first 2 PCs
+    fig.add_subplot(rows, columns, i)
+    
     pca = manual_fit(normalized_house, 0, 1)
     transformed = np.dot(normalized_house, pca.components_.T)
     plt.scatter(transformed[:, 0], transformed[:, 1], c='red', label='houses')
@@ -138,9 +174,11 @@ def visualize_scatter_plot(dataset) :
     
     plt.title('Scatter plot with the first 2 PCs')
     plt.legend()
-    plt.show()
+    i += 1
     
     #scatter plot with third and fourth PCs
+    fig.add_subplot(rows, columns, i)
+    
     pca = manual_fit(normalized_house, 2, 3)
     transformed = np.dot(normalized_house, pca.components_.T)
     plt.scatter(transformed[:, 0], transformed[:, 1], c='red', label='houses')
@@ -159,9 +197,11 @@ def visualize_scatter_plot(dataset) :
     
     plt.title('Scatter plot with 3rd and 4th PCs')
     plt.legend()
-    plt.show()
+    i += 1
     
     #scatter plot with tenth and eleventh PCs
+    fig.add_subplot(rows, columns, i)
+    
     pca = manual_fit(normalized_house, 9, 10)
     transformed = np.dot(normalized_house, pca.components_.T)
     plt.scatter(transformed[:, 0], transformed[:, 1], c='red', label='houses')
@@ -180,6 +220,8 @@ def visualize_scatter_plot(dataset) :
     
     plt.title('Scatter plot with 10th and 11th PCs')
     plt.legend()
+    
+    plt.savefig(outfile_name)
     plt.show()
 
    
@@ -226,13 +268,16 @@ def pca_and_classify(dataset, label):
 imgpath = 'PACS_homework/'
 dataset = []
 label = []
-
+out_folder = 'PCA_outfile'
+cmd = 'mkdir PCA_outfile'
+os.system(cmd)
 #imgs indexes ranges:
 #   houses: 0-279
 #   dogs: 280-468
 #   people: 469-900
 #   guitars: 901-1086
 
+#data loading
 for root, dirs, files in os.walk(imgpath, topdown = False):
     files.sort()
     for file in files:
@@ -254,24 +299,22 @@ menu = "\t\t\t--Main menu--\n\
 while 1 :
     cmd = input(menu)
     if cmd == '0':
-        principal_component_analysis(dataset, 0)
+        principal_component_analysis(dataset, 0, out_folder+'/PCA_all.png')
     elif cmd == '1' :
-        principal_component_analysis(dataset[0:280], 0)
+        principal_component_analysis(dataset[0:280], 0, out_folder+'/PCA_houses.png')
     elif cmd == '2' :
-        principal_component_analysis(dataset[280:469], 0)
+        principal_component_analysis(dataset[280:469], 0, out_folder+'/PCA_dogs.png')
     elif cmd == '3' :
-        principal_component_analysis(dataset[469:901], 0)
+        principal_component_analysis(dataset[469:901], 0, out_folder+'/PCA_people.png')
     elif cmd == '4' :
-        principal_component_analysis(dataset[901:1086], 0)
+        principal_component_analysis(dataset[901:1086], 0, out_folder+'/PCA_guitars.png')
     elif cmd == '5' :
-        visualize_scatter_plot(dataset)
+        visualize_scatter_plot(dataset, out_folder+'/PCA_scatterplot.png')
     elif cmd == '6' :
         classify(dataset, label)
     elif cmd == '7' :
         pca_and_classify(dataset, label)
     elif cmd == 'exit' :
-        sys.exit(0)
-    elif cmd == 'back' or cmd == 'b' :
         break
     else:
         print('Invalid command')
