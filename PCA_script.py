@@ -7,9 +7,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 
     
-def compute_pca(data, n_comp):
+def compute_pca(data, n_comp = None):
     #fit_transform() and inverse_transform() must work on the same PCA object
-    pca = PCA(n_comp)
+    if n_comp == None :
+        pca = PCA()
+    else :
+        pca = PCA(n_comp)
     X_t = pca.fit_transform(data)
     return pca.inverse_transform(X_t)
 
@@ -261,6 +264,21 @@ def pca_and_classify(dataset, label):
     test_scr = classifier.score(X_test, Y_test)*100
     print('3th-4thPCs: SCORE ON TRAIN SET: %.2f%%' % train_scr)
     print('3th-4thPCs: SCORE ON TEST SET: %.2f%%' % test_scr) 
+  
+    
+def print_scree_plot(dataset, outfile_name):
+    normalized, mean_v, std_v = standardize(dataset)
+    
+    #the pca are ordered based on the variance (from the highest to the lowest)
+    #fall the PCs
+    pca = PCA()
+    pca.fit_transform(dataset)
+    plt.plot(np.cumsum(pca.explained_variance_ratio_))
+    plt.xlabel('number of components')
+    plt.ylabel('cumulative explained variance')
+    plt.savefig(outfile_name)
+    plt.show()
+    
     
                             ##########
                             #  MAIN  #
@@ -295,7 +313,9 @@ menu = "\t\t\t--Main menu--\n\
             4.PCA on guitars\n\
             5.Visualize scatter plot\n\
             6.Classify (Naive-Bayes)\n\
-            7.Classify + PCA\n"
+            7.Classify + PCA\n\
+            8.Scree Plot\n"
+            
 while 1 :
     cmd = input(menu)
     if cmd == '0':
@@ -314,6 +334,8 @@ while 1 :
         classify(dataset, label)
     elif cmd == '7' :
         pca_and_classify(dataset, label)
+    elif cmd == '8' :
+        print_scree_plot(dataset, out_folder+'/PCA_scree_plot.png')
     elif cmd == 'exit' :
         break
     else:
