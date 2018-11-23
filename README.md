@@ -1,4 +1,4 @@
-# This is a simple script to analyze simply the effects of principal component analysis on images
+# This is a very simple script to analyze the effects of principal component analysis on images
 
 - Choose a voice in the menu and wait for the output
 - After code execution look for the explanation pdf to understand the reasons for different outputs 
